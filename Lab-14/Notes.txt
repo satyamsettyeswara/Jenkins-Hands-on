@@ -1,0 +1,67 @@
+Jenkins Dynamic Parameters (Real-Time Parameter Input)
+📝 Goal:
+Learn how to generate parameters dynamically before a build starts.
+
+This is useful for cases like fetching a list of branches from Git, environments from a config file, etc.
+
+✅ Steps:
+1️⃣ Install the Active Choices Plugin
+Go to Jenkins Dashboard → Click Manage Jenkins
+
+Click Manage Plugins → Go to the Available tab
+
+Search for "Active Choices Plugin"
+
+Install and restart Jenkins
+
+2️⃣ Create a New Pipeline Job with Dynamic Parameters
+Go to Jenkins Dashboard → Click New Item
+
+Select Pipeline → Enter a name → Click OK
+
+In the Pipeline Configuration Page, scroll down to "This project is parameterized"
+
+Click Add Parameter → Select Active Choices Parameter
+
+🔹 Enter the following details:
+
+Name: BRANCH_NAME
+
+Script Type: Groovy
+
+Groovy Script:
+
+groovy
+Copy
+Edit
+return ['main', 'develop', 'feature-xyz']
+✅ This will dynamically populate the dropdown with these branch options.
+
+3️⃣ Use the Parameter in a Pipeline
+Add the following pipeline script:
+
+groovy
+Copy
+Edit
+pipeline {
+    agent any
+    parameters {
+        choice(name: 'BRANCH_NAME', choices: ['main', 'develop', 'feature-xyz'], description: 'Select Git Branch')
+    }
+    stages {
+        stage('Print Selected Branch') {
+            steps {
+                echo "Building from branch: ${params.BRANCH_NAME}"
+            }
+        }
+    }
+}
+4️⃣ Run the Job & Select a Branch
+Click Build with Parameters
+
+Select a branch from the dropdown
+
+Click Build
+
+✅ The selected branch name should print in the console output.
+
