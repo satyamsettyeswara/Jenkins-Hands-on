@@ -1,0 +1,48 @@
+Stopping and Removing Containers via Jenkins
+Goal:
+✅ Stop a running container from Jenkins
+✅ Remove unused containers automatically
+
+🔹 Step 1️⃣: Write the Jenkins Pipeline
+Go to Jenkins → New Item → Pipeline and paste this script:
+
+groovy
+Copy
+Edit
+pipeline {
+    agent { docker { image 'docker:latest' } }
+
+    environment {
+        CONTAINER_NAME = "my_running_app"
+    }
+
+    stages {
+        stage('Stop Running Container') {
+            steps {
+                sh 'docker stop $CONTAINER_NAME || true'
+            }
+        }
+
+        stage('Remove Stopped Container') {
+            steps {
+                sh 'docker rm $CONTAINER_NAME || true'
+            }
+        }
+
+        stage('List Remaining Containers') {
+            steps {
+                sh 'docker ps -a'
+            }
+        }
+    }
+}
+🔹 Step 2️⃣: Run the Pipeline
+1️⃣ Click Build Now
+2️⃣ Once complete, check if the container was removed by running:
+
+sh
+Copy
+Edit
+docker ps -a
+You should NOT see my_running_app anymore.
+
