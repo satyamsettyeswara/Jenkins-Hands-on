@@ -1,0 +1,64 @@
+Kubernetes Rollbacks with Helm in Jenkins
+Goal:
+✅ Automate Helm Rollbacks with Jenkins
+✅ Revert to a previous deployment in case of failure
+
+🔹 Step 1️⃣: Make a Change to Your Helm Chart
+🔹 Modify the image tag in myapp/values.yaml to an invalid version:
+
+yaml
+Copy
+Edit
+image:
+  repository: nginx
+  tag: "invalid-tag"
+🔹 Package the chart again:
+
+sh
+Copy
+Edit
+helm package myapp
+✅ This creates a new myapp-0.1.1.tgz
+
+🔹 Step 2️⃣: Modify Your Jenkins Pipeline
+1️⃣ Go to Jenkins → Open Your Helm Pipeline Job
+2️⃣ Modify the pipeline to include rollback logic:
+
+groovy
+Copy
+Edit
+pipeline {
+    agent any
+    environment {
+        KUBE_TOKEN = credentials('k8s-token')
+        KUBE_SERVER = 'https://kubernetes.default.svc'
+        RELEASE_NAME = 'myapp'
+    }
+    stages {
+        stage('Package Helm Chart') {
+            steps {
+                sh 'helm package myapp'
+            }
+        }
+        stage('Deploy with Helm') {
+            steps {
+                script {
+                    try {
+                        sh '''
+                        echo $KUBE_TOKEN | kubectl --server=$KUBE_SERVER --token-stdin config set-credentials jenkins-user
+                        helm upgrade --install $RELEASE_NAME ./myapp-0.1.1.tgz
+                        '''
+                    } catch (Exception e) {
+                        echo "Deployment failed! Rolling back..."
+                        sh 'helm rollback $RELEASE_NAME 1'
+                    }
+                }
+            }
+        }
+    }
+}
+🔹 Step 3️⃣: Run the Pipeline
+🔹 Trigger a build in Jenkins
+✅ Jenkins tries to deploy the bad image
+✅ Helm detects failure & rolls back automatically
+
