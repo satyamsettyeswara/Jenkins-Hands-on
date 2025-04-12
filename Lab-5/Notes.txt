@@ -1,0 +1,33 @@
+Using Jenkins Environment Variables
+Goal: Learn how to use built-in and custom environment variables in Jenkins.
+
+1. Create a New Pipeline Job
+Go to New Item > Pipeline > Name it EnvVarsPipeline > Click OK.
+
+2. Add a Pipeline Script
+Replace the default script with:
+------------------------------------------------------------
+pipeline {
+    agent any
+    environment {
+        CUSTOM_VAR = "Hello from Jenkins"
+    }
+    stages {
+        stage('Show Built-in Variables') {
+            steps {
+                sh 'echo "Job Name: $JOB_NAME"'
+                sh 'echo "Build Number: $BUILD_NUMBER"'
+                sh 'echo "Workspace: $WORKSPACE"'
+            }
+        }
+        stage('Show Custom Variable') {
+            steps {
+                sh 'echo "Custom Variable: $CUSTOM_VAR"'
+            }
+        }
+    }
+}
+------------------------------------------------------------
+3. Run and Verify
+Click Build Now and check the Console Output to see all the variables printed.
+
