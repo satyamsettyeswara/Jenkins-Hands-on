@@ -1,0 +1,80 @@
+Helmfile Secrets Management
+Goal:
+✅ Securely manage sensitive values using Helmfile Secrets
+✅ Encrypt and decrypt values using sops
+✅ Automate secrets handling in Jenkins
+
+🔹 Step 1️⃣: Install sops
+Sops (Secrets OPerationS) allows encrypting and decrypting secrets.
+
+Install sops on WSL:
+sh
+Copy
+Edit
+sudo apt-get install -y sops
+Check if it’s installed:
+
+sh
+Copy
+Edit
+sops --version
+🔹 Step 2️⃣: Encrypt a Secrets File
+Create a values/secrets.yaml file with sensitive data:
+
+yaml
+Copy
+Edit
+database:
+  user: admin
+  password: supersecretpassword
+Now, encrypt it using sops:
+
+sh
+Copy
+Edit
+sops --encrypt --in-place values/secrets.yaml
+✔ This converts secrets.yaml into an encrypted format!
+
+To decrypt:
+
+sh
+Copy
+Edit
+sops --decrypt values/secrets.yaml
+🔹 Step 3️⃣: Use Encrypted Secrets in Helmfile
+Modify helmfile.yaml:
+
+yaml
+Copy
+Edit
+releases:
+  - name: my-app
+    namespace: default
+    chart: mychart
+    values:
+      - values/common.yaml
+      - values/secrets.yaml
+    secrets:
+      - values/secrets.yaml
+✔ Helmfile will now automatically decrypt secrets during deployment.
+
+🔹 Step 4️⃣: Automate in Jenkins
+Modify Jenkinsfile to use sops:
+
+groovy
+Copy
+Edit
+pipeline {
+    agent any
+    stages {
+        stage('Deploy with Helmfile & Secrets') {
+            steps {
+                withCredentials([file(credentialsId: 'sops-key', variable: 'SOPS_KEY')]) {
+                    sh "export SOPS_AGE_KEY_FILE=$SOPS_KEY && helmfile apply"
+                }
+            }
+        }
+    }
+}
+✔ This ensures Jenkins decrypts secrets securely before deployment!
+
