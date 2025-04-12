@@ -1,0 +1,94 @@
+Helm & Jenkins - Managing Multiple Environments
+Goal:
+✅ Deploy to multiple environments (Dev, Staging, Prod) using Helm & Jenkins
+✅ Use different configurations per environment
+
+🔹 Step 1️⃣: Update Your Helm Chart for Environments
+Modify your values.yaml to support multiple environments:
+
+yaml
+Copy
+Edit
+image:
+  repository: myapp
+  tag: latest
+
+replicaCount: 1
+
+env:
+  name: dev  # Change this for staging/prod
+  database_url: "mysql://dev-db:3306"
+
+resources:
+  limits:
+    memory: "256Mi"
+    cpu: "0.5"
+🔹 Use separate values files for Staging & Prod:
+
+values-staging.yaml
+
+values-prod.yaml
+
+Example values-prod.yaml:
+
+yaml
+Copy
+Edit
+env:
+  name: prod
+  database_url: "mysql://prod-db:3306"
+
+replicaCount: 3
+
+resources:
+  limits:
+    memory: "1Gi"
+    cpu: "1"
+🔹 Step 2️⃣: Modify Jenkins Pipeline to Handle Environments
+1️⃣ Modify your Jenkinsfile to deploy to different environments:
+
+groovy
+Copy
+Edit
+pipeline {
+    agent any
+    parameters {
+        choice(name: 'ENV', choices: ['dev', 'staging', 'prod'], description: 'Select Deployment Environment')
+    }
+    environment {
+        RELEASE_NAME = "myapp-release"
+        NAMESPACE = "default"
+    }
+    stages {
+        stage('Deploy to Selected Environment') {
+            steps {
+                script {
+                    def valuesFile = "values-${params.ENV}.yaml"
+                    sh """
+                    helm upgrade --install $RELEASE_NAME myapp/ --namespace $NAMESPACE -f $valuesFile
+                    """
+                }
+            }
+        }
+    }
+}
+🔹 The pipeline prompts you to select the environment
+🔹 Jenkins automatically applies the correct config
+
+🔹 Step 3️⃣: Test Your Multi-Env Deployment
+1️⃣ Run the Jenkins job and select:
+
+dev ✅
+
+staging ✅
+
+prod ✅
+
+2️⃣ Check the running pods:
+
+sh
+Copy
+Edit
+kubectl get pods -n default
+✔ Each environment should have different replicas & settings
+
