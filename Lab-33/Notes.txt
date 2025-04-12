@@ -1,0 +1,59 @@
+Deploying Helm Charts with Jenkins
+Goal:
+✅ Automate Helm chart deployment using Jenkins
+✅ Deploy your application to Kubernetes
+
+🔹 Step 1️⃣: Set Up Kubernetes Cluster
+Ensure your Kubernetes cluster is running. Since you use WSL with Docker, you can enable Kubernetes via Docker Desktop:
+
+Open Docker Desktop
+
+Go to Settings → Kubernetes
+
+Enable Kubernetes
+
+Run to verify:
+
+sh
+Copy
+Edit
+kubectl get nodes
+🔹 Step 2️⃣: Modify Jenkins Pipeline for Helm Deployment
+1️⃣ Modify your Jenkinsfile to add a deployment stage
+
+groovy
+Copy
+Edit
+pipeline {
+    agent any
+    environment {
+        RELEASE_NAME = "myapp-release"
+        NAMESPACE = "default"
+    }
+    stages {
+        stage('Deploy to Kubernetes') {
+            steps {
+                sh '''
+                helm upgrade --install $RELEASE_NAME myapp/ --namespace $NAMESPACE
+                '''
+            }
+        }
+    }
+}
+🔹 helm upgrade --install ensures idempotent deployment
+🔹 $NAMESPACE defines where to deploy
+
+🔹 Step 3️⃣: Run the Pipeline
+🔹 Trigger a build in Jenkins
+✅ Helm deploys your app to Kubernetes
+✅ Verify deployment:
+
+sh
+Copy
+Edit
+kubectl get pods
+kubectl get services
+🎯 What You Achieved
+✔ Automated Helm chart deployment
+✔ Deployed an app to Kubernetes using Jenkins
+
