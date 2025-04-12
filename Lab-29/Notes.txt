@@ -1,0 +1,93 @@
+Automating Kubernetes Deployments with Helm in Jenkins
+Goal:
+✅ Use Helm to manage Kubernetes deployments from Jenkins
+✅ Automate Helm chart deployments
+
+🔹 Step 1️⃣: Install Helm on Your WSL Machine
+🔹 Run this command in your WSL terminal:
+
+sh
+Copy
+Edit
+curl https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
+🔹 Verify the installation:
+
+sh
+Copy
+Edit
+helm version
+✅ You should see an output like:
+
+css
+Copy
+Edit
+version.BuildInfo{Version:"v3.x.x", ...}
+🔹 Step 2️⃣: Create a Sample Helm Chart
+We need a Helm chart to deploy an app.
+
+1️⃣ Run this in WSL:
+
+sh
+Copy
+Edit
+helm create myapp
+2️⃣ Modify myapp/values.yaml to change the image name:
+
+yaml
+Copy
+Edit
+image:
+  repository: nginx
+  tag: latest
+3️⃣ Package the chart:
+
+sh
+Copy
+Edit
+helm package myapp
+✅ This creates myapp-0.1.0.tgz
+
+🔹 Step 3️⃣: Add Helm to Jenkins
+1️⃣ Install Helm Plugin (If Not Installed)
+Go to Manage Jenkins → Plugin Manager
+
+Search for Helm
+
+Install Kubernetes CLI & Helm plugin
+
+2️⃣ Add Kubernetes Credentials in Jenkins
+We already added the Kubernetes token in the previous lab.
+
+🔹 Step 4️⃣: Write the Jenkins Pipeline
+1️⃣ Go to Jenkins → New Item → Pipeline
+2️⃣ Paste this pipeline:
+
+groovy
+Copy
+Edit
+pipeline {
+    agent any
+    environment {
+        KUBE_TOKEN = credentials('k8s-token')
+        KUBE_SERVER = 'https://kubernetes.default.svc'
+    }
+    stages {
+        stage('Package Helm Chart') {
+            steps {
+                sh 'helm package myapp'
+            }
+        }
+        stage('Deploy with Helm') {
+            steps {
+                sh '''
+                echo $KUBE_TOKEN | kubectl --server=$KUBE_SERVER --token-stdin config set-credentials jenkins-user
+                helm install myapp ./myapp-0.1.0.tgz
+                '''
+            }
+        }
+    }
+}
+3️⃣ Click Build Now
+
+✅ If successful, your Helm chart should be deployed to Kubernetes! 🎉
+
