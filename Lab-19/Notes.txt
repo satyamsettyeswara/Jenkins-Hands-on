@@ -1,0 +1,56 @@
+Using Docker as a Jenkins Agent
+Now, let’s take it to the next level by using Docker as an agent in Jenkins.
+✅ No need to install tools inside Jenkins!
+✅ Jenkins will dynamically spin up a Docker container for each job!
+
+Step 1️⃣: Enable Docker Plugin in Jenkins
+Go to Jenkins Dashboard → Manage Jenkins → Manage Plugins
+
+Install "Docker Pipeline" plugin
+
+Restart Jenkins
+
+Step 2️⃣: Configure Jenkins to Use Docker Agent
+Go to Jenkins Dashboard → Manage Jenkins → Manage Nodes and Clouds
+
+Click Configure Clouds → Add a new Cloud → Docker
+
+Set the Docker Host URL to:
+
+perl
+Copy
+Edit
+unix:///var/run/docker.sock
+Click Test Connection (should be successful).
+
+Save the settings. ✅
+
+Step 3️⃣: Create a Pipeline with a Docker Agent
+🔹 Go to Jenkins → New Item → Pipeline → OK
+🔹 Use this pipeline script:
+
+groovy
+Copy
+Edit
+pipeline {
+    agent {
+        docker { image 'node:18' }
+    }
+    stages {
+        stage('Check Node.js Version') {
+            steps {
+                sh 'node -v'
+            }
+        }
+        stage('Run Tests') {
+            steps {
+                sh 'npm install && npm test'
+            }
+        }
+    }
+}
+Step 4️⃣: Run the Pipeline
+1️⃣ Save the pipeline.
+2️⃣ Click Build Now.
+3️⃣ Jenkins will dynamically spin up a Docker container with Node.js!
+4️⃣ If successful, you’ll see the Node.js version printed
