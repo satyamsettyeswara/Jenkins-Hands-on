@@ -1,0 +1,55 @@
+Conditional Execution in Jenkins Pipelines
+📝 Goal:
+Learn how to conditionally execute stages based on:
+✅ User-defined parameters
+✅ Previous build results
+
+✅ Steps:
+1️⃣ Create a New Pipeline Job
+Open Jenkins Dashboard → Click New Item
+
+Enter Pipeline Name → Select Pipeline → Click OK
+
+2️⃣ Add the Following Pipeline Code
+Copy and paste this script into the pipeline:
+----------------------------------------------------
+pipeline {
+    agent any
+    parameters {
+        booleanParam(name: 'RUN_TESTS', defaultValue: true, description: 'Run tests?')
+    }
+    stages {
+        stage('Build') {
+            steps {
+                echo "Building the project..."
+                sleep 3
+            }
+        }
+        stage('Test') {
+            when {
+                expression { params.RUN_TESTS }
+            }
+            steps {
+                echo "Running tests..."
+                sleep 3
+                echo "Tests completed!"
+            }
+        }
+        stage('Deploy') {
+            steps {
+                echo "Deploying the application..."
+                sleep 3
+                echo "Deployment successful!"
+            }
+        }
+    }
+}
+----------------------------------------------------
+3️⃣ Run the Pipeline
+Click Build with Parameters
+
+Choose RUN_TESTS = true or false
+
+Click Build Now
+
+Check if the Test stage is skipped when RUN_TESTS = false
