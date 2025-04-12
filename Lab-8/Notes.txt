@@ -1,0 +1,42 @@
+Managing Credentials in Jenkins
+Goal: Learn how to store and use credentials securely in Jenkins.
+
+1. Add Credentials in Jenkins
+Go to Manage Jenkins > Manage Credentials > Select (global) > Add Credentials.
+
+Choose "Username with password" or "Secret text", depending on what you need.
+
+Example:
+
+Username: my-user
+
+Password: mypassword123
+
+ID: MY_CRED (This is how we reference it in pipelines).
+
+Click OK to save.
+
+2. Use Credentials in a Pipeline
+Modify your pipeline to retrieve the credentials securely:
+
+-----------------------------------------------------
+pipeline {
+    agent any
+    stages {
+        stage('Use Credentials') {
+            steps {
+                withCredentials([usernamePassword(credentialsId: 'MY_CRED', usernameVariable: 'USER', passwordVariable: 'PASS')]) {
+                    sh 'echo "Using username: $USER"'
+                    // Don't echo passwords! Just using for demonstration
+                    sh 'echo "Password is $PASS"'
+                }
+            }
+        }
+    }
+}
+-----------------------------------------------------
+3. Run the Job & Verify
+Important: Jenkins will mask the password in the logs.
+
+Check the console output—only the username should be visible, but the password should be hidden.
+
