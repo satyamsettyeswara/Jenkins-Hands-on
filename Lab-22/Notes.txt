@@ -1,0 +1,82 @@
+Building Docker Images with Jenkins Pipelines
+Goal:
+✅ Learn how to build a Docker image in Jenkins
+✅ Tag & push the image to Docker Hub
+✅ Automate containerized application deployment
+
+🔹 Step 1️⃣: Set Up Docker Credentials in Jenkins
+Since Jenkins needs to push images to Docker Hub, we must store credentials securely.
+
+1️⃣ Go to Jenkins Dashboard → Manage Jenkins → Manage Credentials
+2️⃣ Select (global) → Add Credentials
+
+Type: Username & Password
+
+Username: Your Docker Hub username
+
+Password: Your Docker Hub password
+
+ID: docker-hub-credentials (we’ll use this in the pipeline)
+
+🔹 Step 2️⃣: Create a Sample Application
+Create a new folder docker-app and inside it, add:
+
+🔹 Dockerfile
+dockerfile
+Copy
+Edit
+FROM python:3.9-slim
+WORKDIR /app
+COPY app.py .
+CMD ["python", "app.py"]
+🔹 app.py
+python
+Copy
+Edit
+print("Hello from Jenkins Docker Pipeline!")
+🔹 Step 3️⃣: Write the Jenkins Pipeline
+Now, go to Jenkins → New Item → Pipeline and paste this script:
+
+groovy
+Copy
+Edit
+pipeline {
+    agent { docker { image 'docker:latest' } }
+
+    environment {
+        DOCKERHUB_USER = 'your-docker-hub-username'
+        IMAGE_NAME = 'myapp'
+        IMAGE_TAG = 'latest'
+    }
+
+    stages {
+        stage('Checkout Code') {
+            steps {
+                git 'https://github.com/your-repo/docker-app.git'
+            }
+        }
+
+        stage('Build Docker Image') {
+            steps {
+                sh 'docker build -t $DOCKERHUB_USER/$IMAGE_NAME:$IMAGE_TAG .'
+            }
+        }
+
+        stage('Login to Docker Hub') {
+            steps {
+                withCredentials([usernamePassword(credentialsId: 'docker-hub-credentials', usernameVariable: 'USERNAME', passwordVariable: 'PASSWORD')]) {
+                    sh 'echo $PASSWORD | docker login -u $USERNAME --password-stdin'
+                }
+            }
+        }
+
+        stage('Push Image to Docker Hub') {
+            steps {
+                sh 'docker push $DOCKERHUB_USER/$IMAGE_NAME:$IMAGE_TAG'
+            }
+        }
+    }
+}
+🔹 Step 4️⃣: Run the Pipeline
+1️⃣ Click Build Now
+2️⃣ If successful, check Docker Hub → Your image should be pushed
