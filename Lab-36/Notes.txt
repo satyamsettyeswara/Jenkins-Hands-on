@@ -1,0 +1,99 @@
+Helm Secrets - Secure Configs in CI/CD
+Goal:
+✅ Store sensitive data like passwords, API keys securely using Helm Secrets
+✅ Integrate secrets into Jenkins pipelines
+✅ Use SOPS (Mozilla Secrets OPerationS) + Helm
+
+🔹 Step 1️⃣: Install Helm Secrets & SOPS
+We will use SOPS to encrypt/decrypt Helm values files.
+
+Install SOPS & Helm Secrets Plugin
+Run the following in WSL:
+
+sh
+Copy
+Edit
+sudo apt-get install -y gnupg
+wget https://github.com/mozilla/sops/releases/latest/download/sops-linux-amd64 -O sops
+chmod +x sops
+sudo mv sops /usr/local/bin/
+
+helm plugin install https://github.com/jkroepke/helm-secrets
+✅ Verify Installation:
+
+sh
+Copy
+Edit
+helm secrets --help
+sops --version
+🔹 Step 2️⃣: Create an Encrypted Secrets File
+🔹 Store sensitive database credentials securely.
+
+1️⃣ Create a secrets file for production:
+
+sh
+Copy
+Edit
+touch secrets-prod.yaml
+2️⃣ Add sensitive data:
+
+yaml
+Copy
+Edit
+apiKey: "MY_SECRET_KEY"
+databasePassword: "SuperSecretPassword"
+3️⃣ Encrypt the file using SOPS:
+
+sh
+Copy
+Edit
+sops -e -i secrets-prod.yaml
+✔ Now, the file is encrypted and unreadable.
+
+4️⃣ To view decrypted secrets:
+
+sh
+Copy
+Edit
+sops -d secrets-prod.yaml
+🔹 Step 3️⃣: Use Encrypted Secrets in Helm
+Modify the Helm values file to reference secrets:
+
+yaml
+Copy
+Edit
+env:
+  apiKey: ENC[AES256_GCM,data...,iv...,tag...]
+  databasePassword: ENC[AES256_GCM,data...,iv...,tag...]
+To deploy with secrets:
+
+sh
+Copy
+Edit
+helm secrets upgrade --install myapp-release ./myapp -f secrets-prod.yaml
+🔹 Step 4️⃣: Integrate Secrets with Jenkins
+Modify your Jenkinsfile to handle encrypted secrets:
+
+groovy
+Copy
+Edit
+pipeline {
+    agent any
+    environment {
+        RELEASE_NAME = "myapp-release"
+        NAMESPACE = "default"
+    }
+    stages {
+        stage('Deploy with Encrypted Secrets') {
+            steps {
+                script {
+                    sh """
+                    helm secrets upgrade --install $RELEASE_NAME ./myapp -f secrets-prod.yaml
+                    """
+                }
+            }
+        }
+    }
+}
+✔ Jenkins will automatically decrypt and use the secrets for deployment!
+
