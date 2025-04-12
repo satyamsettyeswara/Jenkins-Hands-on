@@ -1,0 +1,67 @@
+Using a Jenkinsfile for Pipeline as Code
+📝 Goal:
+Learn how to store your pipeline script in a Git repository using a Jenkinsfile.
+
+This follows the Pipeline as Code approach, making builds more maintainable.
+
+✅ Steps:
+1️⃣ Create a New Git Repository (If You Don't Have One)
+If you already have a Git repo connected to Jenkins, you can use that.
+
+Otherwise, create a new one on GitHub/GitLab/Bitbucket or locally using:
+
+-------------------------------------------
+mkdir jenkins-pipeline && cd jenkins-pipeline
+git init
+-------------------------------------------
+2️⃣ Create a Jenkinsfile in the Repository
+In your repo, create a file named Jenkinsfile (without an extension).
+
+Add the following pipeline script:
+-------------------------------------------
+pipeline {
+    agent any
+    stages {
+        stage('Checkout Code') {
+            steps {
+                git url: 'https://your-git-repo-url.git', branch: 'main'
+            }
+        }
+        stage('Build') {
+            steps {
+                echo "Building the application..."
+            }
+        }
+        stage('Test') {
+            steps {
+                echo "Running tests..."
+            }
+        }
+        stage('Deploy') {
+            steps {
+                echo "Deploying the application..."
+            }
+        }
+    }
+}
+-------------------------------------------
+🔹 Replace 'https://your-git-repo-url.git' with your actual repo URL.
+
+3️⃣ Push the Jenkinsfile to Git
+Run these commands inside your repo folder:
+
+-------------------------------------------
+git add Jenkinsfile
+git commit -m "Added Jenkinsfile"
+git push origin main
+-------------------------------------------
+4️⃣ Create a New Multibranch Pipeline in Jenkins
+Go to Jenkins Dashboard → Click New Item
+
+Select Multibranch Pipeline → Enter a Name → Click OK
+
+Under Branch Sources, add your Git repository URL
+
+Click Save & Scan Repository
+
+✅ Jenkins will automatically detect the Jenkinsfile and trigger a build!
