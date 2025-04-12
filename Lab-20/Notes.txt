@@ -1,0 +1,88 @@
+Multi-Container Jenkins Workflows (Jenkins + Docker + Another Service)
+Goal:
+✅ Set up Jenkins in Docker
+✅ Use Docker to run a separate service (e.g., MySQL, Redis, or a custom app)
+✅ Have Jenkins communicate with this service inside Docker
+
+Step 1️⃣: Start Jenkins in Docker (Skip if Already Running)
+If you already have Jenkins running inside Docker, you can skip this step. Otherwise, start it:
+
+sh
+Copy
+Edit
+docker run -d \
+  --name jenkins \
+  --restart always \
+  -p 8080:8080 -p 50000:50000 \
+  -v jenkins_data:/var/jenkins_home \
+  -v /var/run/docker.sock:/var/run/docker.sock \
+  jenkins/jenkins:lts
+Step 2️⃣: Start a Service in Docker (Example: MySQL)
+Now, let’s run MySQL as a separate service:
+
+sh
+Copy
+Edit
+docker run -d \
+  --name mysql-db \
+  -e MYSQL_ROOT_PASSWORD=root \
+  -e MYSQL_DATABASE=testdb \
+  -p 3306:3306 \
+  mysql:latest
+📌 What This Does:
+
+Runs MySQL as a separate container
+
+Exposes it on port 3306
+
+Uses root as the password
+
+Step 3️⃣: Verify MySQL is Running
+Run this command:
+
+sh
+Copy
+Edit
+docker ps
+You should see both Jenkins and MySQL running.
+
+You can also test MySQL with:
+
+sh
+Copy
+Edit
+docker exec -it mysql-db mysql -uroot -p
+(Enter root as the password)
+
+Step 4️⃣: Create a Jenkins Pipeline to Connect to MySQL
+🔹 Go to Jenkins → New Item → Pipeline → OK
+🔹 Use this pipeline script:
+
+groovy
+Copy
+Edit
+pipeline {
+    agent any
+    stages {
+        stage('Check MySQL Connection') {
+            steps {
+                sh '''
+                apt-get update && apt-get install -y mysql-client
+                mysql -h mysql-db -uroot -proot -e "SHOW DATABASES;"
+                '''
+            }
+        }
+    }
+}
+📌 What This Does:
+
+Installs MySQL client inside Jenkins
+
+Connects to mysql-db container
+
+Runs SHOW DATABASES; to verify connection
+
+Step 5️⃣: Run the Pipeline
+1️⃣ Click Build Now
+2️⃣ If successful, you should see a list of databases printed 🎉
+
