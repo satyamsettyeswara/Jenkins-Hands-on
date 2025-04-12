@@ -1,0 +1,81 @@
+Jenkins + Docker + Kubernetes Together
+Goal:
+✅ Use Docker inside a Kubernetes Jenkins agent
+✅ Run Docker commands in Jenkins pipeline
+✅ Ensure Docker works in a K8s pod
+
+🔹 Step 1️⃣: Add Docker to the Kubernetes Jenkins Agent
+We need a Jenkins agent that can run Docker inside Kubernetes.
+
+1️⃣ Go to Jenkins → Manage Jenkins → Configure Clouds
+2️⃣ Edit the existing Kubernetes cloud
+3️⃣ In Pod Templates, add a new Container Template:
+
+Name: docker-agent
+
+Image: docker:latest
+
+Command to run: /bin/sh -c
+
+Arguments: "sleep infinity"
+
+Mount the Docker socket:
+
+Host Path: /var/run/docker.sock
+
+Mount Path: /var/run/docker.sock
+
+Privileged Mode: ✅ Enable it
+
+Label: k8s-docker-agent 4️⃣ Click Save
+
+🔹 Step 2️⃣: Test Docker Inside Kubernetes
+1️⃣ Go to Jenkins → New Item → Pipeline
+2️⃣ Paste this pipeline:
+
+groovy
+Copy
+Edit
+pipeline {
+    agent {
+        kubernetes {
+            label 'k8s-docker-agent'
+        }
+    }
+    stages {
+        stage('Check Docker') {
+            steps {
+                sh 'docker version'
+                sh 'docker images'
+            }
+        }
+    }
+}
+3️⃣ Click Build Now
+✅ You should see Docker info printed in the logs!
+
+🔹 Step 3️⃣: Run a Docker Container in Kubernetes Agent
+Let's create a simple Docker-based pipeline inside Kubernetes.
+
+1️⃣ Go to Jenkins → New Item → Pipeline
+2️⃣ Paste this pipeline:
+
+groovy
+Copy
+Edit
+pipeline {
+    agent {
+        kubernetes {
+            label 'k8s-docker-agent'
+        }
+    }
+    stages {
+        stage('Run a Container') {
+            steps {
+                sh 'docker run --rm hello-world'
+            }
+        }
+    }
+}
+3️⃣ Click Build Now
+✅ You should see Hello from Docker!
