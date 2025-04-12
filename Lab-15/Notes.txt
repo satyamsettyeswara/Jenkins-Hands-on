@@ -1,0 +1,138 @@
+ Running Jenkins in Docker
+📝 Goal
+We will:
+✅ Install Docker (if not installed)
+✅ Pull the Jenkins Docker image
+✅ Run Jenkins in a Docker container
+✅ Access Jenkins in a browser
+
+Step 1️⃣: Install Docker
+First, let’s check if Docker is installed.
+
+🔹 Open your terminal and run:
+
+sh
+Copy
+Edit
+docker --version
+If Docker is installed, you'll see an output like this:
+
+nginx
+Copy
+Edit
+Docker version 24.0.6, build ed223bc
+If not installed, install it using:
+
+sh
+Copy
+Edit
+sudo apt update
+sudo apt install docker.io -y
+After installation, start and enable Docker so it runs on boot:
+
+sh
+Copy
+Edit
+sudo systemctl start docker
+sudo systemctl enable docker
+Now, check again:
+
+sh
+Copy
+Edit
+docker --version
+Step 2️⃣: Allow Jenkins to Use Docker
+By default, only the root user can run Docker commands.
+To allow your user to run Docker, execute:
+
+sh
+Copy
+Edit
+sudo usermod -aG docker $USER
+Then, log out and log back in for changes to take effect.
+
+🔹 Check if the change worked by running:
+
+sh
+Copy
+Edit
+docker ps
+If it shows an empty list, you're good! 🎯
+If you get a permission error, restart your system.
+
+Step 3️⃣: Pull the Jenkins Docker Image
+Now, download the official Jenkins image:
+
+sh
+Copy
+Edit
+docker pull jenkins/jenkins:lts
+This might take a few minutes depending on your internet speed.
+
+🔹 Verify the image is downloaded by running:
+
+sh
+Copy
+Edit
+docker images
+You should see something like this:
+
+bash
+Copy
+Edit
+REPOSITORY     TAG     IMAGE ID       CREATED      SIZE
+jenkins/jenkins  lts   a5b5aa8c1234   3 days ago  600MB
+Step 4️⃣: Run Jenkins in a Container
+Now, let’s start Jenkins inside Docker:
+
+sh
+Copy
+Edit
+docker run -d --name jenkins-docker \
+  -p 8080:8080 -p 50000:50000 \
+  -v jenkins_home:/var/jenkins_home \
+  jenkins/jenkins:lts
+🔹 Explanation:
+
+-d → Runs in the background
+
+--name jenkins-docker → Names the container
+
+-p 8080:8080 → Maps Jenkins web interface to port 8080
+
+-p 50000:50000 → Needed for agent communication
+
+-v jenkins_home:/var/jenkins_home → Saves Jenkins data
+
+🔹 Check if Jenkins is running:
+
+sh
+Copy
+Edit
+docker ps
+Expected output:
+
+bash
+Copy
+Edit
+CONTAINER ID   IMAGE             STATUS          PORTS
+abc12345       jenkins/jenkins   Up 10 minutes  0.0.0.0:8080->8080/tcp
+Step 5️⃣: Access Jenkins
+Now, open your browser and go to:
+👉 http://localhost:8080
+
+🔹 Find the Jenkins admin password by running:
+
+sh
+Copy
+Edit
+docker exec jenkins-docker cat /var/jenkins_home/secrets/initialAdminPassword
+Copy this password and paste it in the Jenkins setup wizard.
+
+Complete the setup by:
+✔ Installing Suggested Plugins
+✔ Creating an Admin User
+✔ Setting up Jenkins
+
+🔍 Expected Output
+You should see the Jenkins dashboard at http://localhost:8080. 🎉
