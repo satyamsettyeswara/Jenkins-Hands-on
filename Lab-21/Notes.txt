@@ -1,0 +1,124 @@
+Using Docker Compose for Jenkins Setup
+Goal:
+✅ Use Docker Compose to manage Jenkins + MySQL in a single YAML file
+✅ Make the setup easier to start, stop, and manage
+✅ Use volumes for persistent data
+
+🔹 Step 1️⃣: Install Docker Compose (If Not Installed)
+Run this to check if Docker Compose is installed:
+
+sh
+Copy
+Edit
+docker-compose version
+If it’s not installed, install it with:
+
+sh
+Copy
+Edit
+sudo apt-get update
+sudo apt-get install docker-compose -y
+🔹 Step 2️⃣: Create a docker-compose.yml File
+Inside a new folder (jenkins-docker), create a docker-compose.yml file:
+
+yaml
+Copy
+Edit
+version: '3.8'
+
+services:
+  jenkins:
+    image: jenkins/jenkins:lts
+    container_name: jenkins
+    restart: always
+    ports:
+      - "8080:8080"
+      - "50000:50000"
+    volumes:
+      - jenkins_data:/var/jenkins_home
+      - /var/run/docker.sock:/var/run/docker.sock
+
+  mysql:
+    image: mysql:latest
+    container_name: mysql-db
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: testdb
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+
+volumes:
+  jenkins_data:
+  mysql_data:
+📌 What This Does:
+✔ Defines Jenkins + MySQL in a single file
+✔ Creates persistent storage for Jenkins & MySQL
+✔ Exposes ports so Jenkins & MySQL can communicate
+
+🔹 Step 3️⃣: Start Everything with One Command
+Navigate to the folder where you created docker-compose.yml and run:
+
+sh
+Copy
+Edit
+docker-compose up -d
+🔹 Step 4️⃣: Verify Everything is Running
+Check running containers:
+
+sh
+Copy
+Edit
+docker ps
+You should see Jenkins and MySQL running.
+
+🔹 Step 5️⃣: Access Jenkins
+Go to:
+🔗 http://localhost:8080
+
+Use this command to get the initial Jenkins admin password:
+
+sh
+Copy
+Edit
+docker exec jenkins cat /var/jenkins_home/secrets/initialAdminPassword
+🔹 Step 6️⃣: Connect Jenkins Pipeline to MySQL
+Now, create a Jenkins Pipeline using this script:
+
+groovy
+Copy
+Edit
+pipeline {
+    agent {
+        docker { image 'mysql:latest' }
+    }
+    stages {
+        stage('Check MySQL Connection') {
+            steps {
+                sh '''
+                mysql -h mysql-db -uroot -proot -e "SHOW DATABASES;"
+                '''
+            }
+        }
+    }
+}
+✅ This should work exactly as before!
+
+🔹 Step 7️⃣: Stop and Restart Easily
+Now that Jenkins & MySQL are managed by Docker Compose, you can:
+
+🛑 Stop everything
+
+sh
+Copy
+Edit
+docker-compose down
+▶ Start everything again
+
+sh
+Copy
+Edit
+docker-compose up -d
+🚀 That’s it! Your Jenkins setup is now easier to manage!
