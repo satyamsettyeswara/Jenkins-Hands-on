@@ -1,0 +1,130 @@
+Building and Pushing Docker Images with Jenkins
+📝 Goal
+We will:
+✅ Build a Docker image using a Jenkins pipeline
+✅ Push the image to Docker Hub (or a private registry)
+
+Step 1️⃣: Install Docker on the Jenkins Container
+Since Jenkins runs inside Docker, it does not have Docker installed inside it.
+
+🔹 To enable Jenkins to run Docker commands, do this:
+
+Run a new Jenkins container with Docker inside it
+(Stop your previous Jenkins container first)
+
+sh
+Copy
+Edit
+docker stop jenkins-docker
+docker rm jenkins-docker
+Run Jenkins with Docker access
+
+sh
+Copy
+Edit
+docker run -d --name jenkins-docker \
+   -p 8080:8080 -p 50000:50000 \
+   -v /var/run/docker.sock:/var/run/docker.sock \
+   -v jenkins_home:/var/jenkins_home \
+   jenkins/jenkins:lts
+🔹 Explanation:
+
+We mount /var/run/docker.sock to allow Jenkins to run Docker commands.
+
+Step 2️⃣: Install Docker in Jenkins
+Since Jenkins runs in a container, it doesn’t have Docker installed inside.
+
+Access the Jenkins container’s shell:
+
+sh
+Copy
+Edit
+docker exec -it jenkins-docker bash
+Install Docker inside Jenkins:
+
+sh
+Copy
+Edit
+apt update
+apt install docker.io -y
+Check if Docker is working:
+
+sh
+Copy
+Edit
+docker --version
+Step 3️⃣: Create Docker Hub Credentials in Jenkins
+Open Jenkins Dashboard → Manage Jenkins → Manage Credentials.
+
+Click Global Credentials → Add Credentials.
+
+Select Username and Password:
+
+ID → docker-hub
+
+Username → (Your Docker Hub username)
+
+Password → (Your Docker Hub password)
+
+Save it. ✅
+
+Step 4️⃣: Create a Jenkins Pipeline to Build & Push a Docker Image
+🔹 Go to Jenkins → New Item → Pipeline → OK
+🔹 Use this pipeline script:
+
+groovy
+Copy
+Edit
+pipeline {
+    agent any
+    environment {
+        IMAGE_NAME = "your-dockerhub-username/myapp"
+        IMAGE_TAG = "latest"
+        DOCKER_CREDENTIALS = "docker-hub"
+    }
+    stages {
+        stage('Clone Repository') {
+            steps {
+                git 'https://github.com/your-repo/sample-app.git'
+            }
+        }
+        stage('Build Docker Image') {
+            steps {
+                sh "docker build -t $IMAGE_NAME:$IMAGE_TAG ."
+            }
+        }
+        stage('Login to Docker Hub') {
+            steps {
+                withCredentials([usernamePassword(credentialsId: DOCKER_CREDENTIALS, usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
+                    sh "echo $DOCKER_PASS | docker login -u $DOCKER_USER --password-stdin"
+                }
+            }
+        }
+        stage('Push Image to Docker Hub') {
+            steps {
+                sh "docker push $IMAGE_NAME:$IMAGE_TAG"
+            }
+        }
+    }
+}
+🔹 Explanation:
+
+Pulls code from GitHub
+
+Builds a Docker image
+
+Logs into Docker Hub using credentials
+
+Pushes the image to Docker Hub
+
+Step 5️⃣: Run the Pipeline
+1️⃣ Save the pipeline.
+2️⃣ Click Build Now.
+3️⃣ If successful, you’ll see:
+
+arduino
+Copy
+Edit
+Successfully built <image-id>
+Successfully tagged your-dockerhub-username/myapp:latest
+Pushed to Docker Hub!
