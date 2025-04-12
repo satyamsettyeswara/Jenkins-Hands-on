@@ -1,0 +1,42 @@
+Jenkins Job Logs and Build History Management
+Goal: Learn how to manage Jenkins logs, configure build retention, and clean up old builds.
+
+1. Configure Build Retention Policy
+Open an existing job (e.g., TriggerJob).
+
+Click Configure > Scroll to Discard old builds.
+
+Check the box and enter:
+
+Max # of builds to keep: 5
+
+Max # of days to keep builds: 7
+
+Save the job.
+
+2. View and Manage Build Logs
+Run the job multiple times.
+
+Go to Build History and verify old builds are being deleted after the limit is reached.
+
+Click on any build > Console Output to check logs.
+
+3. Clean Up Workspace Manually
+Open the job > Click Workspace.
+
+Manually delete unnecessary files.
+
+Alternatively, add this post-build step in the pipeline to clean up after each build:
+
+--------------------------------------------------------
+post {
+    always {
+        cleanWs()
+    }
+}
+--------------------------------------------------------
+4. Configure Jenkins System Log
+Go to Manage Jenkins > System Log.
+
+View logs and understand where Jenkins stores them ($JENKINS_HOME/logs).
+
