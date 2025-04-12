@@ -1,0 +1,35 @@
+Chaining Jenkins Jobs
+Goal: Create a workflow where one Jenkins job triggers another automatically.
+
+1. Create Two Jobs
+Go to New Item > Create two Freestyle projects:
+
+Job-A
+
+Job-B
+
+2. Configure Job-A to Trigger Job-B
+Open Job-A > Click Configure.
+
+Under Post-build Actions, select "Build other projects".
+
+Enter Job-B in the field.
+
+Save the job.
+
+3. Add Build Steps
+Job-A: Add an Execute Shell step with:
+-----------------------------------------------
+echo "Job-A is executing..."
+-----------------------------------------------
+Job-B: Add an Execute Shell step with:
+-----------------------------------------------
+echo "Job-B is triggered by Job-A!"
+-----------------------------------------------
+4. Test the Job Chain
+Go to Job-A and click Build Now.
+
+Wait and check if Job-B starts automatically after Job-A.
+
+Verify in Console Output of Job-B.
+
