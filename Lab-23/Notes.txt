@@ -1,0 +1,50 @@
+Deploying Docker Containers with Jenkins Pipelines
+Goal:
+✅ Pull an image from Docker Hub
+✅ Run a container using Jenkins
+✅ Automate container deployment
+
+🔹 Step 1️⃣: Write the Jenkins Pipeline
+Go to Jenkins → New Item → Pipeline and paste this script:
+
+groovy
+Copy
+Edit
+pipeline {
+    agent { docker { image 'docker:latest' } }
+
+    environment {
+        DOCKERHUB_USER = 'your-docker-hub-username'
+        IMAGE_NAME = 'myapp'
+        IMAGE_TAG = 'latest'
+    }
+
+    stages {
+        stage('Pull Docker Image') {
+            steps {
+                sh 'docker pull $DOCKERHUB_USER/$IMAGE_NAME:$IMAGE_TAG'
+            }
+        }
+
+        stage('Run Docker Container') {
+            steps {
+                sh 'docker run --name my_running_app -d $DOCKERHUB_USER/$IMAGE_NAME:$IMAGE_TAG'
+            }
+        }
+
+        stage('Check Running Containers') {
+            steps {
+                sh 'docker ps'
+            }
+        }
+    }
+}
+🔹 Step 2️⃣: Run the Pipeline
+1️⃣ Click Build Now
+2️⃣ Once complete, run this command to check the container:
+
+sh
+Copy
+Edit
+docker ps
+You should see my_running_app running!
