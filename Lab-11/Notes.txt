@@ -1,0 +1,53 @@
+Running Parallel Stages in a Jenkins Pipeline
+📝 Goal:
+Learn how to execute multiple tasks in parallel inside a Jenkins pipeline.
+
+This helps speed up build processes (e.g., running tests while compiling code).
+
+✅ Steps:
+1️⃣ Create a New Pipeline Job
+Open Jenkins Dashboard → Click New Item
+
+Enter Pipeline Name → Select Pipeline → Click OK
+
+2️⃣ Add the Following Pipeline Code
+Replace the existing pipeline script with this:
+
+------------------------------------------------------------
+pipeline {
+    agent any
+    stages {
+        stage('Parallel Execution') {
+            parallel {
+                stage('Task 1 - Build') {
+                    steps {
+                        echo "Building the project..."
+                        sleep 5
+                        echo "Build completed!"
+                    }
+                }
+                stage('Task 2 - Test') {
+                    steps {
+                        echo "Running tests..."
+                        sleep 5
+                        echo "Tests completed!"
+                    }
+                }
+                stage('Task 3 - Security Scan') {
+                    steps {
+                        echo "Performing security scan..."
+                        sleep 5
+                        echo "Security scan completed!"
+                    }
+                }
+            }
+        }
+    }
+}
+------------------------------------------------------------
+3️⃣ Run the Pipeline
+Click Save & Build Now
+
+Watch the Build Console Output
+
+✅ You should see all three tasks running in parallel instead of one after another.
