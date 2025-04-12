@@ -1,0 +1,70 @@
+Scaling Jenkins with Docker Agents
+Goal:
+✅ Use Docker containers as Jenkins agents
+✅ Scale Jenkins dynamically by launching temporary agents in Docker
+
+🔹 Step 1️⃣: Install Required Plugins
+Before we begin, ensure that the Docker Pipeline and Docker Plugin are installed:
+
+1️⃣ Go to Jenkins → Manage Jenkins → Manage Plugins
+2️⃣ Install:
+
+Docker Pipeline
+
+Docker Plugin
+3️⃣ Restart Jenkins
+
+🔹 Step 2️⃣: Configure Docker as a Cloud Agent Provider
+1️⃣ Go to Manage Jenkins → Configure System
+2️⃣ Scroll to Cloud → Add a new cloud → Docker
+3️⃣ Set:
+
+Docker Host URI: unix:///var/run/docker.sock (for Linux)
+
+DOCKER_TLS_VERIFY: Unchecked
+
+Enabled: ✅
+
+4️⃣ Under "Docker Agent Templates," click "Add"
+
+Labels: docker-agent
+
+Docker Image: jenkins/inbound-agent
+
+Connect Method: Attach via JNLP
+
+User: jenkins
+
+Volumes: /var/run/docker.sock:/var/run/docker.sock
+
+Enabled: ✅
+
+5️⃣ Click Save
+
+🔹 Step 3️⃣: Create a Pipeline Using Docker Agents
+1️⃣ Go to Jenkins → New Item → Pipeline
+2️⃣ Paste the following script:
+
+groovy
+Copy
+Edit
+pipeline {
+    agent {
+        docker {
+            image 'alpine' 
+        }
+    }
+
+    stages {
+        stage('Check Docker Agent') {
+            steps {
+                sh 'echo "Running on a Docker agent!"'
+                sh 'cat /etc/os-release'
+            }
+        }
+    }
+}
+🔹 Step 4️⃣: Run the Pipeline & Verify
+1️⃣ Run the job
+2️⃣ If successful, you should see "Running on a Docker agent!" in the logs
+
