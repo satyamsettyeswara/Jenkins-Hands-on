@@ -1,0 +1,172 @@
+Running Jenkins Agents with Kubernetes (WSL-Compatible)
+Goal:
+✅ Set up Kubernetes (K8s) in WSL
+✅ Deploy Jenkins Master & Agents in Kubernetes
+✅ Run a Jenkins pipeline using Kubernetes agents
+
+🔹 Step 1️⃣: Install & Configure Kubernetes in WSL
+Since you're using WSL, we need a Kubernetes setup that works well in this environment.
+The best option is Minikube (a lightweight K8s cluster).
+
+👉 Step 1.1: Install Minikube & kubectl
+1️⃣ Open WSL (Ubuntu) and install dependencies:
+
+bash
+Copy
+Edit
+sudo apt update && sudo apt install -y curl conntrack
+2️⃣ Install kubectl (K8s CLI tool):
+
+bash
+Copy
+Edit
+curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
+chmod +x kubectl
+sudo mv kubectl /usr/local/bin/
+3️⃣ Install Minikube:
+
+bash
+Copy
+Edit
+curl -LO https://storage.googleapis.com/minikube/releases/latest/minikube-linux-amd64
+sudo install minikube-linux-amd64 /usr/local/bin/minikube
+4️⃣ Start Minikube with Docker as the driver:
+
+bash
+Copy
+Edit
+minikube start --driver=docker
+5️⃣ Verify Minikube is running:
+
+bash
+Copy
+Edit
+kubectl get nodes
+✅ You should see a single Minikube node running
+
+🔹 Step 2️⃣: Deploy Jenkins in Kubernetes
+👉 Step 2.1: Create a Kubernetes Namespace for Jenkins
+Run:
+
+bash
+Copy
+Edit
+kubectl create namespace jenkins
+👉 Step 2.2: Deploy Jenkins Master
+Apply the following YAML file to deploy Jenkins:
+
+yaml
+Copy
+Edit
+cat <<EOF | kubectl apply -f -
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: jenkins
+  namespace: jenkins
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: jenkins
+  template:
+    metadata:
+      labels:
+        app: jenkins
+    spec:
+      containers:
+      - name: jenkins
+        image: jenkins/jenkins:lts
+        ports:
+        - containerPort: 8080
+        - containerPort: 50000
+EOF
+👉 Step 2.3: Expose Jenkins with a Service
+Run:
+
+bash
+Copy
+Edit
+kubectl expose deployment jenkins --type=NodePort --port=8080 --namespace=jenkins
+🔹 Step 3️⃣: Get Jenkins URL & Unlock Password
+1️⃣ Get Jenkins NodePort:
+
+bash
+Copy
+Edit
+kubectl get svc -n jenkins
+✅ Look for a port under PORT(S) like 30000:8080/TCP
+
+2️⃣ Get Jenkins Admin Password:
+
+bash
+Copy
+Edit
+kubectl logs deployment/jenkins -n jenkins | grep "password"
+3️⃣ Access Jenkins by opening:
+
+arduino
+Copy
+Edit
+http://localhost:<NodePort>
+(Replace <NodePort> with the port from Step 1)
+
+4️⃣ Unlock Jenkins using the password from Step 2.
+
+🔹 Step 4️⃣: Deploy Kubernetes Jenkins Agent
+1️⃣ Create a Service Account for Jenkins agents:
+
+bash
+Copy
+Edit
+kubectl create serviceaccount jenkins-agent -n jenkins
+kubectl create clusterrolebinding jenkins-agent-role --clusterrole=cluster-admin --serviceaccount=jenkins:jenkins-agent
+2️⃣ Go to Jenkins → Manage Jenkins → Configure Clouds
+
+Click "Add a New Cloud" → Select Kubernetes
+
+Set:
+
+Kubernetes URL: https://kubernetes.default
+
+Jenkins URL: http://jenkins.jenkins.svc.cluster.local:8080
+
+Namespace: jenkins
+
+Pod Template: Add a pod template with:
+
+Label: k8s-agent
+
+Container Template:
+
+Image: jenkins/inbound-agent
+
+Command to run: /bin/sh -c
+
+Arguments: "cat"
+
+3️⃣ Click Save
+
+🔹 Step 5️⃣: Run a Jenkins Pipeline with Kubernetes Agents
+1️⃣ Go to Jenkins → New Item → Pipeline
+2️⃣ Paste the following pipeline:
+
+groovy
+Copy
+Edit
+pipeline {
+    agent {
+        kubernetes {
+            label 'k8s-agent'
+        }
+    }
+    stages {
+        stage('Run on K8s Agent') {
+            steps {
+                sh 'echo "Running in Kubernetes!"'
+                sh 'hostname'
+            }
+        }
+    }
+}
+3️⃣ Click Build Now ✅
