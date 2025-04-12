@@ -1,0 +1,42 @@
+Automating Helm Chart Linting in Jenkins
+Goal:
+✅ Set up Helm linting in Jenkins
+✅ Ensure Helm charts follow best practices
+
+🔹 Step 1️⃣: Install Helm Linter in Your Jenkins Agent
+If you haven’t already installed Helm in your Jenkins agent, run:
+
+sh
+Copy
+Edit
+helm lint --help
+🔹 If Helm is missing, install it:
+
+sh
+Copy
+Edit
+curl -fsSL -o get_helm.sh https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3
+chmod 700 get_helm.sh
+./get_helm.sh
+🔹 Step 2️⃣: Modify Jenkins Pipeline for Helm Linting
+1️⃣ Open your Jenkins pipeline job
+2️⃣ Modify your Jenkinsfile to add a linting stage
+
+groovy
+Copy
+Edit
+pipeline {
+    agent any
+    stages {
+        stage('Lint Helm Chart') {
+            steps {
+                sh 'helm lint myapp/'
+            }
+        }
+    }
+}
+🔹 Step 3️⃣: Run the Pipeline
+🔹 Trigger a build in Jenkins
+✅ Jenkins checks for Helm chart errors
+✅ If errors exist, it fails the pipeline
+
