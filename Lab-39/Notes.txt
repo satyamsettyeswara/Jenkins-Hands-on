@@ -1,0 +1,124 @@
+Advanced Helm Customization with Helmfile
+Goal:
+✅ Use Helmfile to manage Helm releases with custom values
+✅ Work with Helmfile environments for different setups
+✅ Automate customized deployments with Jenkins
+
+🔹 Step 1️⃣: Create a Helmfile with Custom Values
+Modify your helmfile.yaml to use a custom values file for Nginx:
+
+yaml
+Copy
+Edit
+repositories:
+  - name: bitnami
+    url: https://charts.bitnami.com/bitnami
+
+releases:
+  - name: nginx
+    namespace: default
+    chart: bitnami/nginx
+    version: 15.6.0
+    values:
+      - values/nginx-values.yaml
+🔹 Step 2️⃣: Create a Custom Values File
+Create a values/nginx-values.yaml file:
+
+yaml
+Copy
+Edit
+replicaCount: 3
+service:
+  type: NodePort
+  port: 30080
+resources:
+  limits:
+    cpu: "500m"
+    memory: "512Mi"
+  requests:
+    cpu: "250m"
+    memory: "256Mi"
+🚀 This configures:
+
+3 replicas of Nginx
+
+NodePort service on port 30080
+
+Custom CPU & memory limits
+
+🔹 Step 3️⃣: Use Helmfile Environments
+Modify helmfile.yaml to define different environments:
+
+yaml
+Copy
+Edit
+environments:
+  staging:
+    values:
+      - values/staging-values.yaml
+  production:
+    values:
+      - values/production-values.yaml
+
+releases:
+  - name: nginx
+    namespace: default
+    chart: bitnami/nginx
+    version: 15.6.0
+    values:
+      - ./values/common.yaml
+Create two values files for staging and production:
+
+✅ values/staging-values.yaml:
+
+yaml
+Copy
+Edit
+replicaCount: 2
+service:
+  type: LoadBalancer
+  port: 80
+✅ values/production-values.yaml:
+
+yaml
+Copy
+Edit
+replicaCount: 5
+service:
+  type: LoadBalancer
+  port: 80
+Deploy using:
+
+sh
+Copy
+Edit
+helmfile -e staging apply
+helmfile -e production apply
+✔ This deploys different setups for staging & production!
+
+🔹 Step 4️⃣: Automate in Jenkins
+Modify your Jenkinsfile to deploy different environments:
+
+groovy
+Copy
+Edit
+pipeline {
+    agent any
+    parameters {
+        choice(name: 'ENV', choices: ['staging', 'production'], description: 'Choose environment')
+    }
+    stages {
+        stage('Deploy with Helmfile') {
+            steps {
+                sh "helmfile -e ${params.ENV} apply"
+            }
+        }
+    }
+}
+✔ Jenkins now lets you choose an environment before deployment!
+
+🎯 What You Achieved
+✔ Used custom values in Helmfile
+✔ Managed multiple environments in Helmfile
+✔ Automated customized deployments via Jenkins
+
