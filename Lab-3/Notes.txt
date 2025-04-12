@@ -1,0 +1,26 @@
+Jenkins Job Automation
+Goal: Learn how to create and trigger Jenkins jobs automatically.
+
+1. Create a Scheduled Job
+Go to New Item > Freestyle Project > Name it ScheduledJob > Click OK.
+
+Scroll to Build Triggers and check "Build periodically".
+
+Enter a schedule (e.g., every 5 minutes):
+--------------------------------------------------------
+H/5 * * * *
+--------------------------------------------------------
+(This means Jenkins will trigger the job every 5 minutes.)
+
+2. Add a Build Step
+Under Build, select Execute Shell and enter:
+--------------------------------------------------------
+echo "This job runs every 5 minutes!"
+date
+--------------------------------------------------------
+Click Save.
+
+3. Monitor the Job Execution
+Wait for a few minutes and check Build History.
+
+Click the latest build and check the Console Output to verify execution.
