@@ -1,0 +1,52 @@
+Setting Up and Using an Agent Node in Jenkins
+Goal: Learn how to add and use an agent node to run Jenkins jobs on a separate machine or workspace.
+
+1. Enable Agent Nodes in Jenkins
+Go to Manage Jenkins > Configure Global Security.
+
+Enable "TCP port for inbound agents", set it to fixed (e.g., 50000).
+
+Click Save.
+
+2. Add a New Node
+Go to Manage Jenkins > Manage Nodes and Clouds > New Node.
+
+Enter name: MyAgent and select Permanent Agent.
+
+Configure:
+
+Remote root directory: C:\JenkinsAgent (or /home/jenkins/agent on Linux).
+
+Launch method: Launch agent via Java Web Start.
+
+Labels: my-agent (used in pipelines).
+
+Click Save.
+
+3. Start the Agent
+On the agent machine (or the same machine if testing locally), go to:
+-----------------------------------------------------------
+http://localhost:8080/computer/MyAgent/
+Download the agent.jar file.
+-----------------------------------------------------------
+Start the agent with:
+-----------------------------------------------------------
+java -jar agent.jar -jnlpUrl http://localhost:8080/computer/MyAgent/slave-agent.jnlp -secret <secret-key> -workDir "C:\JenkinsAgent"
+The agent should now be connected! 🎉
+-----------------------------------------------------------
+4. Modify a Pipeline to Use the Agent
+Edit your pipeline to run on the agent:
+-----------------------------------------------------------
+pipeline {
+    agent { label 'my-agent' }
+    stages {
+        stage('Run on Agent') {
+            steps {
+                echo "This job is running on MyAgent!"
+            }
+        }
+    }
+}
+-----------------------------------------------------------
+5. Run the Job & Verify
+Run the pipeline and check if it runs on MyAgent instead of the master node.
