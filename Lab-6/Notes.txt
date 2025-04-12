@@ -1,0 +1,59 @@
+Parameterized Job Triggering
+Goal: Create a Jenkins job that triggers another job and passes parameters dynamically.
+
+1. Create Two Pipeline Jobs
+Job 1: TriggerJob
+
+Job 2: TargetJob
+
+2. Configure Target Job to Accept Parameters
+Open TargetJob > Configure.
+
+Check "This project is parameterized".
+
+Add a String Parameter:
+
+Name: MESSAGE
+
+Default Value: Triggered from another job!
+
+Save the job.
+
+3. Modify TargetJob Pipeline Script
+Replace the script with:
+-------------------------------------------------------
+pipeline {
+    agent any
+    parameters {
+        string(name: 'MESSAGE', defaultValue: 'Triggered from another job!', description: 'Message from TriggerJob')
+    }
+    stages {
+        stage('Print Message') {
+            steps {
+                echo "Received message: ${params.MESSAGE}"
+            }
+        }
+    }
+}
+-------------------------------------------------------
+4. Configure TriggerJob to Call TargetJob
+Open TriggerJob > Configure.
+
+Use the following pipeline script:
+-------------------------------------------------------
+pipeline {
+    agent any
+    stages {
+        stage('Trigger Another Job') {
+            steps {
+                build job: 'TargetJob', parameters: [string(name: 'MESSAGE', value: 'Hello from TriggerJob!')]
+            }
+        }
+    }
+}
+-------------------------------------------------------
+5. Run the Jobs & Verify
+Click Build Now on TriggerJob.
+
+Check TargetJob logs to see the message being passed dynamically.
+
