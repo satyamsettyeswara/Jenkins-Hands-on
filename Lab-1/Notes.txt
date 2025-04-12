@@ -1,0 +1,34 @@
+Goal: Create and run a simple Jenkins pipeline using the GUI.
+
+1. Create a Pipeline Job
+Go to "New Item" > Select "Pipeline" > Name it MyFirstPipeline > Click OK.
+
+Scroll to the Pipeline section and select Pipeline script.
+
+2. Use a Basic Declarative Pipeline
+Replace the script in the editor with:
+---------------------------------------------
+pipeline {
+    agent any
+    stages {
+        stage('Build') {
+            steps {
+                echo 'Building the project...'
+            }
+        }
+        stage('Test') {
+            steps {
+                echo 'Running tests...'
+            }
+        }
+        stage('Deploy') {
+            steps {
+                echo 'Deploying application...'
+            }
+        }
+    }
+}
+----------------------------------------------
+Click Save and Build Now.
+
+Check the Console Output to see each stage executing.
