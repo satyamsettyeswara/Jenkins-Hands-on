@@ -1,0 +1,79 @@
+Running Jenkins Builds in Docker Agents
+📝 Goal
+Instead of running builds directly inside the Jenkins container, we will:
+✅ Use Docker as a build agent
+✅ Configure Jenkins to dynamically create containers for builds
+✅ Run a test job using a Docker-based agent
+
+Step 1️⃣: Install Docker Plugin in Jenkins
+Open Jenkins Dashboard (http://localhost:8080).
+
+Go to Manage Jenkins → Manage Plugins.
+
+Search for "Docker Pipeline" and install it.
+
+Restart Jenkins after installation.
+
+Step 2️⃣: Configure Docker as a Cloud in Jenkins
+Go to Manage Jenkins → Manage Nodes and Clouds.
+
+Click Configure Clouds → Add a new cloud → Select Docker.
+
+In Docker Host URI, enter:
+
+perl
+Copy
+Edit
+unix:///var/run/docker.sock
+Click Test Connection → If it works, you’re good! 🎯
+
+Save the settings.
+
+Step 3️⃣: Create a Pipeline Using a Docker Agent
+Now, let’s create a Jenkins pipeline that runs inside a Docker container.
+
+🔹 Go to Jenkins → New Item → Pipeline → OK
+🔹 Use this pipeline script:
+
+groovy
+Copy
+Edit
+pipeline {
+    agent {
+        docker {
+            image 'ubuntu:latest'
+        }
+    }
+    stages {
+        stage('Run inside Docker') {
+            steps {
+                sh 'echo "Hello from inside a Docker container!"'
+                sh 'ls -la'
+            }
+        }
+    }
+}
+🔹 Explanation:
+
+The agent runs inside a Docker container (Ubuntu)
+
+Jenkins spins up a new container, runs the commands, and then removes the container
+
+The steps run simple shell commands inside the container
+
+Step 4️⃣: Run the Pipeline
+1️⃣ Save the pipeline.
+2️⃣ Click Build Now.
+3️⃣ If successful, you’ll see:
+
+css
+Copy
+Edit
+Hello from inside a Docker container!
+🚀 Next Steps
+1️⃣ Install the Docker Pipeline plugin
+2️⃣ Configure Docker as a cloud in Jenkins
+3️⃣ Run the pipeline inside a Docker agent
+4️⃣ If successful, reply "done"
+
+Let me know if you need help! 🔥
