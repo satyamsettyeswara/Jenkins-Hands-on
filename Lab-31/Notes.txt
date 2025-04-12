@@ -1,0 +1,59 @@
+Helm Chart Versioning & CI/CD with Jenkins
+Goal:
+✅ Implement versioning for Helm charts
+✅ Automate Helm chart publishing using Jenkins
+
+🔹 Step 1️⃣: Modify Your Helm Chart for Versioning
+1️⃣ Update the Chart.yaml file inside your Helm chart directory (myapp/Chart.yaml):
+
+yaml
+Copy
+Edit
+apiVersion: v2
+name: myapp
+description: A Helm chart for Kubernetes
+version: 0.2.0
+appVersion: "2.0.0"
+🔹 The version field is for Helm chart versioning
+🔹 The appVersion is for application versioning
+
+🔹 Step 2️⃣: Modify Jenkins Pipeline for Helm Versioning
+1️⃣ Go to Jenkins → Open Your Helm Pipeline Job
+2️⃣ Modify the pipeline to push the chart to a Helm repository:
+
+groovy
+Copy
+Edit
+pipeline {
+    agent any
+    environment {
+        CHART_VERSION = "0.2.0"
+        HELM_REPO_URL = "https://your-helm-repo.com"
+    }
+    stages {
+        stage('Package Helm Chart') {
+            steps {
+                sh 'helm package myapp --version $CHART_VERSION'
+            }
+        }
+        stage('Push to Helm Repo') {
+            steps {
+                sh '''
+                curl -u user:password -T myapp-$CHART_VERSION.tgz $HELM_REPO_URL
+                '''
+            }
+        }
+    }
+}
+🔹 This pipeline packages the Helm chart
+🔹 It then uploads it to a Helm chart repository
+
+🔹 Step 3️⃣: Run the Pipeline
+🔹 Trigger a build in Jenkins
+✅ Jenkins packages & uploads the Helm chart
+✅ You should see the new version in the Helm repository
+
+🎯 What You Achieved
+✔ Automated Helm chart versioning
+✔ Uploaded Helm charts to a repository
+
