@@ -1,0 +1,96 @@
+Helm Rollbacks - Handling Failed Deployments
+Goal:
+✅ Use Helm Rollback to revert to a previous stable release
+✅ Automate rollback in Jenkins when deployment fails
+✅ Learn helm history & helm rollback commands
+
+🔹 Step 1️⃣: Deploy an Application with Helm
+Run the following Helm command:
+
+sh
+Copy
+Edit
+helm upgrade --install myapp-release ./myapp --namespace default
+✅ Verify deployment:
+
+sh
+Copy
+Edit
+helm list
+🔹 Step 2️⃣: Check Deployment History
+List all past deployments:
+
+sh
+Copy
+Edit
+helm history myapp-release
+✔ This will show revision numbers (e.g., REVISION 1, 2, 3).
+
+🔹 Step 3️⃣: Simulate a Failure
+Modify your Helm chart (values.yaml) to intentionally break the deployment:
+
+yaml
+Copy
+Edit
+replicaCount: 0
+Now, upgrade the release:
+
+sh
+Copy
+Edit
+helm upgrade myapp-release ./myapp
+Check the rollout status:
+
+sh
+Copy
+Edit
+kubectl get pods
+🚨 The deployment should fail!
+
+🔹 Step 4️⃣: Rollback to Previous Version
+Find the last working revision number:
+
+sh
+Copy
+Edit
+helm history myapp-release
+Rollback using:
+
+sh
+Copy
+Edit
+helm rollback myapp-release 1
+✅ Verify rollback:
+
+sh
+Copy
+Edit
+kubectl get pods
+helm list
+🔹 Step 5️⃣: Automate Rollback in Jenkins
+Modify your Jenkinsfile:
+
+groovy
+Copy
+Edit
+pipeline {
+    agent any
+    environment {
+        RELEASE_NAME = "myapp-release"
+    }
+    stages {
+        stage('Deploy') {
+            steps {
+                script {
+                    def deployStatus = sh(script: "helm upgrade --install $RELEASE_NAME ./myapp", returnStatus: true)
+                    if (deployStatus != 0) {
+                        echo "Deployment failed! Rolling back..."
+                        sh "helm rollback $RELEASE_NAME 1"
+                    }
+                }
+            }
+        }
+    }
+}
+✔ If the deployment fails, Jenkins will automatically rollback to the last working version! 🚀
+
