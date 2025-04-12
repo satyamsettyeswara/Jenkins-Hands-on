@@ -1,0 +1,42 @@
+Working with Parameters in Pipelines
+Goal: Create a Jenkins pipeline that takes user input and uses it in the build process.
+
+1. Modify Your Pipeline to Accept Parameters
+Open your MyFirstPipeline job.
+
+Click Configure and replace the script with:
+-----------------------------------------------
+pipeline {
+    agent any
+    parameters {
+        string(name: 'USERNAME', defaultValue: 'JenkinsUser', description: 'Enter your name')
+        booleanParam(name: 'RUN_TESTS', defaultValue: true, description: 'Run tests?')
+    }
+    stages {
+        stage('Build') {
+            steps {
+                echo "Building the project for user: ${params.USERNAME}"
+            }
+        }
+        stage('Test') {
+            when {
+                expression { params.RUN_TESTS }
+            }
+            steps {
+                echo 'Running tests...'
+            }
+        }
+        stage('Deploy') {
+            steps {
+                echo 'Deploying application...'
+            }
+        }
+    }
+}
+------------------------------------------------
+2. Run the Pipeline with Parameters
+Click Build with Parameters (instead of Build Now).
+
+Enter a custom name and toggle the RUN_TESTS checkbox.
+
+Run the build and check the Console Output to see the values being used.
