@@ -1,0 +1,50 @@
+Backing Up and Restoring Jenkins
+Goal: Learn how to back up Jenkins configurations, jobs, and plugins and restore them when needed.
+
+1. Locate Jenkins Home Directory
+Run this command inside Jenkins:
+
+-------------------------------------------------------
+echo $JENKINS_HOME
+-------------------------------------------------------
+On Windows, it’s usually: C:\ProgramData\Jenkins\.jenkins
+
+On Linux, it’s usually: /var/lib/jenkins
+
+2. Backup Jenkins Manually
+Stop Jenkins:
+-------------------------------------------------------
+service jenkins stop  # Linux
+net stop jenkins  # Windows
+-------------------------------------------------------
+Copy the entire Jenkins home directory to a backup location:
+-------------------------------------------------------
+cp -r $JENKINS_HOME /backup/jenkins_backup_$(date +%F)
+-------------------------------------------------------
+Restart Jenkins:
+
+-------------------------------------------------------
+service jenkins start  # Linux
+net start jenkins  # Windows
+-------------------------------------------------------
+3. Restore Jenkins from Backup
+If something goes wrong, replace the current Jenkins home with the backup:
+
+-------------------------------------------------------
+cp -r /backup/jenkins_backup_YYYY-MM-DD/* $JENKINS_HOME
+Restart Jenkins and verify everything is back.
+-------------------------------------------------------
+4. Automate Backups Using a Pipeline
+You can also automate backups using a Jenkins job:
+-------------------------------------------------------
+pipeline {
+    agent any
+    stages {
+        stage('Backup Jenkins') {
+            steps {
+                sh 'tar -czvf /backup/jenkins_backup_$(date +%F).tar.gz $JENKINS_HOME'
+            }
+        }
+    }
+}
+-------------------------------------------------------
