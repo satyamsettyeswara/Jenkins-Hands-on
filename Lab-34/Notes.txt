@@ -1,0 +1,69 @@
+Rolling Updates & Rollbacks with Helm & Jenkins
+Goal:
+✅ Automate Helm rolling updates using Jenkins
+✅ Enable rollback to a previous version if needed
+
+🔹 Step 1️⃣: Modify Jenkins Pipeline for Rolling Updates
+1️⃣ Modify your Jenkinsfile to support versioning & rolling updates
+
+groovy
+Copy
+Edit
+pipeline {
+    agent any
+    environment {
+        RELEASE_NAME = "myapp-release"
+        NAMESPACE = "default"
+        IMAGE_TAG = "v2.0"  // Change this for new versions
+    }
+    stages {
+        stage('Rolling Update') {
+            steps {
+                sh '''
+                helm upgrade --install $RELEASE_NAME myapp/ --namespace $NAMESPACE --set image.tag=$IMAGE_TAG
+                '''
+            }
+        }
+    }
+}
+🔹 IMAGE_TAG updates your app version
+🔹 Helm applies a rolling update
+
+🔹 Step 2️⃣: Verify Deployment in Kubernetes
+After running the pipeline, check the rollout status:
+
+sh
+Copy
+Edit
+kubectl rollout status deployment myapp-release
+✔ If successful, your update is live 🎉
+
+🔹 Step 3️⃣: Implement Rollback in Jenkins Pipeline
+1️⃣ Modify your Jenkinsfile to include rollback support
+
+groovy
+Copy
+Edit
+pipeline {
+    agent any
+    environment {
+        RELEASE_NAME = "myapp-release"
+        NAMESPACE = "default"
+    }
+    stages {
+        stage('Rollback on Failure') {
+            steps {
+                script {
+                    try {
+                        sh "helm upgrade --install $RELEASE_NAME myapp/ --namespace $NAMESPACE"
+                    } catch (Exception e) {
+                        echo "Deployment failed! Rolling back..."
+                        sh "helm rollback $RELEASE_NAME 1"
+                    }
+                }
+            }
+        }
+    }
+}
+🔹 If the deployment fails, it rolls back to the previous version
+
