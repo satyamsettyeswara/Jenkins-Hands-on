@@ -1,0 +1,69 @@
+Deploying Applications in Kubernetes using Jenkins
+Goal:
+✅ Deploy an application to Kubernetes using Jenkins Pipelines
+✅ Use kubectl from Jenkins to deploy
+
+🔹 Step 1️⃣: Configure Kubernetes in Jenkins
+We need to allow Jenkins to access Kubernetes and deploy applications.
+
+🔹 Create a Service Account for Jenkins
+1️⃣ Run this command in your WSL terminal:
+
+sh
+Copy
+Edit
+kubectl create serviceaccount jenkins-deployer
+2️⃣ Bind this service account to the cluster-admin role:
+
+sh
+Copy
+Edit
+kubectl create clusterrolebinding jenkins-deployer-binding \
+  --clusterrole=cluster-admin \
+  --serviceaccount=default:jenkins-deployer
+3️⃣ Get the token for Jenkins:
+
+sh
+Copy
+Edit
+kubectl get secret $(kubectl get serviceaccount jenkins-deployer -o jsonpath='{.secrets[0].name}') -o jsonpath='{.data.token}' | base64 --decode
+🔹 Copy this token → We will use it in Jenkins.
+
+🔹 Step 2️⃣: Add Kubernetes Credentials to Jenkins
+1️⃣ Go to Jenkins → Manage Jenkins → Manage Credentials
+2️⃣ Under (global) credentials, click Add Credentials
+3️⃣ Select Type: Secret text
+
+Secret: (Paste the token copied earlier)
+
+ID: k8s-token
+
+Description: Kubernetes API Token 4️⃣ Click Save
+
+🔹 Step 3️⃣: Write the Jenkins Pipeline
+1️⃣ Go to Jenkins → New Item → Pipeline
+2️⃣ Paste this pipeline:
+
+groovy
+Copy
+Edit
+pipeline {
+    agent any
+    environment {
+        KUBE_TOKEN = credentials('k8s-token')
+        KUBE_SERVER = 'https://kubernetes.default.svc'
+    }
+    stages {
+        stage('Deploy to Kubernetes') {
+            steps {
+                sh '''
+                echo "Starting Kubernetes Deployment..."
+                echo $KUBE_TOKEN | kubectl --server=$KUBE_SERVER --token-stdin apply -f deployment.yaml
+                '''
+            }
+        }
+    }
+}
+3️⃣ Click Build Now
+
+✅ If successful, your application should be deployed to Kubernetes! 🎉
