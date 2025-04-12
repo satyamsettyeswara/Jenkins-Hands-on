@@ -1,0 +1,89 @@
+Helmfile - Managing Multiple Helm Releases
+Goal:
+✅ Use Helmfile to manage multiple Helm releases
+✅ Deploy and update multiple applications with a single command
+✅ Integrate Helmfile with Jenkins pipeline
+
+🔹 Step 1️⃣: Install Helmfile
+If Helmfile is not installed, install it using:
+
+sh
+Copy
+Edit
+curl -sSL https://github.com/helmfile/helmfile/releases/latest/download/helmfile-linux-amd64 -o /usr/local/bin/helmfile
+chmod +x /usr/local/bin/helmfile
+✅ Verify installation:
+
+sh
+Copy
+Edit
+helmfile --version
+🔹 Step 2️⃣: Create a Helmfile
+Create a new helmfile.yaml:
+
+yaml
+Copy
+Edit
+repositories:
+  - name: bitnami
+    url: https://charts.bitnami.com/bitnami
+
+releases:
+  - name: nginx
+    namespace: default
+    chart: bitnami/nginx
+    version: 15.5.3
+
+  - name: redis
+    namespace: default
+    chart: bitnami/redis
+    version: 17.3.1
+This defines two Helm releases (Nginx and Redis) from Bitnami charts.
+
+🔹 Step 3️⃣: Deploy with Helmfile
+Run the following command to deploy all applications:
+
+sh
+Copy
+Edit
+helmfile apply
+✔ Verify deployments:
+
+sh
+Copy
+Edit
+helm list
+kubectl get pods -n default
+🔹 Step 4️⃣: Update Applications
+Modify helmfile.yaml, e.g., update Nginx version:
+
+yaml
+Copy
+Edit
+version: 15.6.0
+Run:
+
+sh
+Copy
+Edit
+helmfile sync
+🚀 This updates all applications automatically!
+
+🔹 Step 5️⃣: Automate with Jenkins
+Modify your Jenkinsfile:
+
+groovy
+Copy
+Edit
+pipeline {
+    agent any
+    stages {
+        stage('Deploy with Helmfile') {
+            steps {
+                sh 'helmfile apply'
+            }
+        }
+    }
+}
+✔ Jenkins will deploy multiple applications at once!
+
