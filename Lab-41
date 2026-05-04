@@ -1,0 +1,36 @@
+pipeline {
+    agent any
+    parameters {
+        string(name: 'STATUS_CODE', defaultValue: '1', description: 'Enter 1, 2, or 3')
+    }
+    stages {
+        stage('Set Status Color') {
+            steps {
+                script {
+                    // Convert input to integer
+                    def val = params.STATUS_CODE.toInteger()
+
+                    switch(val) {
+                        case 1:
+                            currentBuild.result = 'FAILURE' // Turns RED
+                            echo "Value is 1: Marking as FAILURE"
+                            break
+                        case 2:
+                            currentBuild.result = 'UNSTABLE' // Turns YELLOW
+                            echo "Value is 2: Marking as UNSTABLE"
+                            break
+                        case 3:
+                            currentBuild.result = 'FAILURE' // Turns RED (standard for network issues)
+                            echo "Value is 3: Network Issue detected!"
+                            // Alternatively, use 'ABORTED' if you want it to turn GRAY
+                            break
+                        default:
+                            currentBuild.result = 'SUCCESS' // Turns GREEN/BLUE
+                            echo "Value is ${val}: Marking as SUCCESS"
+                            break
+                    }
+                }
+            }
+        }
+    }
+}
